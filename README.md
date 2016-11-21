@@ -1,4 +1,5 @@
 # PhoneGap Calendar plugin
+:warning: This plugin is SUPPORTED by OutSystems. Customers entitled to Support Services may obtain assistance through Support.
 
 for iOS and Android, by [Eddy Verbruggen](http://www.x-services.nl)
 

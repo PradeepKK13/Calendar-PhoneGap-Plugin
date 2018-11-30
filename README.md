@@ -48,6 +48,9 @@ cordova plugin add cordova-plugin-calendar --variable CALENDAR_USAGE_DESCRIPTION
 * Supported methods on Android 4: `find`, `create` (silent and interactive), `delete`, ..
 * Supported methods on Android 2 and 3: `create` interactive only: the user is presented a prefilled Calendar event. Pressing the hardware back button will give control back to your app.
 
+### Windows 10 Mobile
+* Supported methods: `createEvent`, `createEventWithOptions`, `createEventInteractively`, `createEventInteractivelyWithOptions` only interactively
+
 ## 2. Installation
 
 ### Automatically
@@ -130,24 +133,28 @@ Also, make sure you're building with Gradle by adding this to your `config.xml` 
 
 The table gives an overview of basic operation compatibility:
 
-Operation                           | Comment     | iOS | Android
------------------------------------ | ----------- | --- | -------
-createCalendar                      |             | yes | yes
-deleteCalendar                      |             | yes | yes
-createEvent                         | silent      | yes | yes (on Android < 4 dialog is shown)
-createEventWithOptions              | silent      | yes | yes (on Android < 4 dialog is shown)
-createEventInteractively            | interactive | yes | yes
-createEventInteractivelyWithOptions | interactive | yes | yes
-findEvent                           |             | yes | yes
-findEventWithOptions                |             | yes | yes
-listEventsInRange                   |             |     | yes
-listCalendars                       |             | yes | yes
-findAllEventsInNamedCalendars       |             | yes |
-modifyEvent                         |             | yes |
-modifyEventWithOptions              |             | yes |
-deleteEvent                         |             | yes | yes
-deleteEventFromNamedCalendar        |             | yes |
-openCalendar                        |             | yes | yes
+Operation                           | Comment     | iOS | Android | Windows |
+----------------------------------- | ----------- | --- | ------- | ------- |
+createCalendar                      |             | yes | yes     |         |
+deleteCalendar                      |             | yes | yes     |         |
+createEvent                         | silent      | yes | yes *   | yes **  |
+createEventWithOptions              | silent      | yes | yes *   | yes **  |
+createEventInteractively            | interactive | yes | yes     | yes **  |
+createEventInteractivelyWithOptions | interactive | yes | yes     | yes **  |
+findEvent                           |             | yes | yes     |         |
+findEventWithOptions                |             | yes | yes     |         |
+listEventsInRange                   |             |     | yes     |         |
+listCalendars                       |             | yes | yes     |         |
+findAllEventsInNamedCalendars       |             | yes |         |         |
+modifyEvent                         |             | yes |         |         |
+modifyEventWithOptions              |             | yes |         |         |
+deleteEvent                         |             | yes | yes     |         |
+deleteEventFromNamedCalendar        |             | yes |         |         |
+deleteEventById                     |             | yes | yes     |         |
+openCalendar                        |             | yes | yes     |         |
+
+* \* on Android < 4 dialog is shown
+* \** only interactively on windows mobile
 
 Basic operations, you'll want to copy-paste this for testing purposes:
 ```js
@@ -235,13 +242,16 @@ Basic operations, you'll want to copy-paste this for testing purposes:
   newOptions.firstReminderMinutes = 120;
   window.plugins.calendar.modifyEventWithOptions(title,eventLocation,notes,startDate,endDate,newTitle,eventLocation,notes,startDate,endDate,filterOptions,newOptions,success,error);
 
-  // delete an event (you can pass nulls for irrelevant parameters, note that on Android `notes` is ignored). The dates are mandatory and represent a date range to delete events in.
+  // delete an event (you can pass nulls for irrelevant parameters). The dates are mandatory and represent a date range to delete events in.
   // note that on iOS there is a bug where the timespan must not be larger than 4 years, see issue 102 for details.. call this method multiple times if need be
   // since 4.3.0 you can match events starting with a prefix title, so if your event title is 'My app - cool event' then 'My app -' will match.
   window.plugins.calendar.deleteEvent(newTitle,eventLocation,notes,startDate,endDate,success,error);
 
   // delete an event, as above, but for a specific calendar (iOS only)
   window.plugins.calendar.deleteEventFromNamedCalendar(newTitle,eventLocation,notes,startDate,endDate,calendarName,success,error);
+
+  // delete an event by id. If the event has recurring instances, all will be deleted unless `fromDate` is specified, which will delete from that date onward. (iOS and android only)
+  window.plugins.calendar.deleteEventById(id,fromDate,success,error);
 
   // open the calendar app (added in 4.2.8):
   // - open it at 'today'

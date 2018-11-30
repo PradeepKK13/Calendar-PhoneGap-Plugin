@@ -345,6 +345,9 @@
       if ([thisCalendar.title isEqualToString:calendarName]) {
         return thisCalendar;
       }
+      if ([thisCalendar.calendarIdentifier isEqualToString:calendarName]) {
+        return thisCalendar;
+      }
     }
   }
   NSLog(@"No match found for calendar with name: %@", calendarName);
@@ -378,7 +381,7 @@
     NSMutableDictionary *entry = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
                                   event.title, @"title",
                                   event.calendar.title, @"calendar",
-                                  event.eventIdentifier, @"id",
+                                  event.calendarItemIdentifier , @"id",
                                   [df stringFromDate:event.startDate], @"startDate",
                                   [df stringFromDate:event.endDate], @"endDate",
                                   [df stringFromDate:event.lastModifiedDate], @"lastModifiedDate",
@@ -457,7 +460,6 @@
       }
     }
 
-    [entry setObject:event.calendarItemIdentifier forKey:@"id"];
     [results addObject:entry];
   }
   return results;
@@ -499,6 +501,32 @@
 }
 
 - (void) listEventsInRange:(CDVInvokedUrlCommand*)command {
+  NSDictionary* options = [command.arguments objectAtIndex:0];
+  NSNumber* startTime  = [options objectForKey:@"startTime"];
+  NSNumber* endTime    = [options objectForKey:@"endTime"];
+
+  [self.commandDelegate runInBackground: ^{
+      NSLog(@"listEventsInRange invoked");
+      NSTimeInterval _startInterval = [startTime doubleValue] / 1000; // strip millis
+      NSDate *startDate = [NSDate dateWithTimeIntervalSince1970:_startInterval];
+
+      NSTimeInterval _endInterval = [endTime doubleValue] / 1000; // strip millis
+      NSDate *endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
+
+      NSLog(@"startDate: %@", startDate);
+      NSLog(@"endDate: %@", endDate);
+
+      CDVPluginResult *pluginResult = nil;
+
+      NSArray *calendarArray = nil;
+      NSPredicate *fetchCalendarEvents = [eventStore predicateForEventsWithStartDate:startDate endDate:endDate calendars:calendarArray];
+      NSArray *matchingEvents = [eventStore eventsMatchingPredicate:fetchCalendarEvents];
+      NSMutableArray * eventsDataArray = [self eventsToDataArray:matchingEvents];
+
+      pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsArray:eventsDataArray];
+
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+  }];  
 }
 
 - (void)createEventWithOptions:(CDVInvokedUrlCommand*)command {
@@ -743,6 +771,57 @@
   } else {
     [self deleteEventFromCalendar:command calendar: calendar];
   }
+}
+
+- (void) deleteEventById:(CDVInvokedUrlCommand*)command {
+  NSDictionary* options = [command.arguments objectAtIndex:0];
+  NSString* ciid = [options objectForKey:@"id"];
+  NSNumber* fromTime = [options objectForKey:@"fromTime"];
+
+  [self.commandDelegate runInBackground: ^{
+
+    // Get original instance
+    EKEvent* firstEvent = (EKEvent *)[eventStore calendarItemWithIdentifier:ciid];
+    if (firstEvent == nil) {
+      // Fail
+      [self.commandDelegate
+        sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Could not find event."]
+        callbackId:command.callbackId];
+      return;
+    } else {
+      EKEvent* instance;
+      if (fromTime != nil && fromTime != (id)NSNull.null) {
+        // Find target instance
+        NSDate* fromDate = [NSDate dateWithTimeIntervalSince1970:(fromTime.doubleValue / 1000)]; // strip millis
+        NSArray<EKEvent*>* toDelete = [eventStore eventsMatchingPredicate:[eventStore predicateForEventsWithStartDate:fromDate endDate:NSDate.distantFuture calendars:@[firstEvent.calendar]]];
+        if (toDelete.count < 1) {
+          // Nothing to delete
+          [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
+          return;
+        }
+        NSArray<EKEvent*>* toDeleteSorted = [toDelete sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
+        instance = toDeleteSorted.firstObject;
+      } else {
+        // First instance is target
+        instance = firstEvent;
+      }
+
+      // Delete
+      NSError *error = nil;
+      [eventStore removeEvent:instance span:EKSpanFutureEvents error:&error];
+      if (error != nil) {
+        // Fail
+        [self.commandDelegate
+          sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Could not delete event."]
+          callbackId:command.callbackId];
+        return;
+      } else {
+        // Succeed
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK] callbackId:command.callbackId];
+        return;
+      }
+    }
+  }];
 }
 
 - (void) findAllEventsInNamedCalendar:(CDVInvokedUrlCommand*)command {

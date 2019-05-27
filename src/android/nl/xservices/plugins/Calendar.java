@@ -213,7 +213,8 @@ public class Calendar extends CordovaPlugin {
 
   private void openCalendarLegacy(JSONArray args) {
     try {
-      final Long millis = args.getJSONObject(0).optLong("date");
+      long provided = args.getJSONObject(0).optLong("date", -1);
+      final long millis = provided < 0 ? new Date().getTime() : provided;
 
       cordova.getThreadPool().execute(new Runnable() {
         @Override
@@ -236,7 +237,8 @@ public class Calendar extends CordovaPlugin {
   @TargetApi(14)
   private void openCalendar(JSONArray args) {
     try {
-      final Long millis = args.getJSONObject(0).optLong("date");
+      long provided = args.getJSONObject(0).optLong("date", -1);
+      final long millis = provided < 0 ? new Date().getTime() : provided;
 
       cordova.getThreadPool().execute(new Runnable() {
         @Override

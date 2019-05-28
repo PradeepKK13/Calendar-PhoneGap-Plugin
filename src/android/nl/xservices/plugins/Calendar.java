@@ -213,7 +213,8 @@ public class Calendar extends CordovaPlugin {
 
   private void openCalendarLegacy(JSONArray args) {
     try {
-      final Long millis = args.getJSONObject(0).optLong("date");
+      long provided = args.getJSONObject(0).optLong("date", -1);
+      final long millis = provided < 0 ? new Date().getTime() : provided;
 
       cordova.getThreadPool().execute(new Runnable() {
         @Override
@@ -236,7 +237,8 @@ public class Calendar extends CordovaPlugin {
   @TargetApi(14)
   private void openCalendar(JSONArray args) {
     try {
-      final Long millis = args.getJSONObject(0).optLong("date");
+      long provided = args.getJSONObject(0).optLong("date", -1);
+      final long millis = provided < 0 ? new Date().getTime() : provided;
 
       cordova.getThreadPool().execute(new Runnable() {
         @Override
@@ -694,18 +696,21 @@ public class Calendar extends CordovaPlugin {
       if (resultCode == Activity.RESULT_OK || resultCode == Activity.RESULT_CANCELED) {
         // resultCode may be 0 (RESULT_CANCELED) even when it was created, so passing nothing is the clearest option here
         Log.d(LOG_TAG, "onActivityResult resultcode: " + resultCode);
-        callback.success();
+        if (callback != null)
+          callback.success();
       } else {
         // odd case
         Log.d(LOG_TAG, "onActivityResult weird resultcode: " + resultCode);
-        callback.success();
+        if (callback != null)
+          callback.success();
       }
     } else if (requestCode == RESULT_CODE_OPENCAL) {
       Log.d(LOG_TAG, "onActivityResult requestCode: " + RESULT_CODE_OPENCAL);
-      callback.success();
+      // Callback is called right after startActivityForResult
     } else {
       Log.d(LOG_TAG, "onActivityResult error, resultcode: " + resultCode);
-      callback.error("Unable to add event (" + resultCode + ").");
+      if (callback != null)
+        callback.error("Unable to add event (" + resultCode + ").");
     }
   }
 

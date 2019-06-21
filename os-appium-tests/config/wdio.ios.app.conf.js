@@ -15,3 +15,5 @@ config.capabilities = [
         noReset: true,
     },
 ];
+
+exports.config = config;

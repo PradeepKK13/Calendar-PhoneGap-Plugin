@@ -1,4 +1,4 @@
-import "../constants"
+import { DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_INTERVAL } from "./Constants";
 
 export const CONTEXT_REF = {
     NATIVE: 'native',
@@ -70,4 +70,25 @@ export function waitForWebsiteLoaded (): void {
     this.switchToContext(CONTEXT_REF.WEBVIEW);
     this.waitForDocumentFullyLoaded();
     this.switchToContext(CONTEXT_REF.NATIVE);
+}
+
+export function getElemBySelector (selector: string, throwError: boolean = true, waitTime: number = DEFAULT_TIMEOUT): WebdriverIO.Element | undefined {
+    return waitForElement(selector, throwError, waitTime);
+}
+
+export function waitForElement (selector: string, throwError: boolean = true, waitTime: number = DEFAULT_TIMEOUT): WebdriverIO.Element | undefined {
+    let elem = $$(selector);
+    let it = 0;
+    while (elem.length < 1 && it < waitTime / DEFAULT_TIMEOUT_INTERVAL) {
+        browser.pause(DEFAULT_TIMEOUT_INTERVAL);
+        it++;
+        elem = $$(selector);
+    }
+    if (elem.length > 0) {
+        return elem[0]
+    } else if (throwError) {
+        throw new Error('Element not found: ' + selector);
+    } else {
+        return undefined;
+    }
 }

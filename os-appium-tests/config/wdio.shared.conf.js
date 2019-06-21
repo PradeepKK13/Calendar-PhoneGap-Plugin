@@ -1,5 +1,3 @@
-import "constants"
-
 exports.config = {
     maxInstances: 1,
     // ============
@@ -38,7 +36,7 @@ exports.config = {
     deprecationWarnings: true,
     bail: 0,
     baseUrl: '',
-    waitforTimeout: DEFAULT_TIMEOUT,
+    waitforTimeout: 10000,
     connectionRetryTimeout: 30000,
     connectionRetryCount: 1,
     reporters: [

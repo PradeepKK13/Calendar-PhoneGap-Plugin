@@ -1,4 +1,6 @@
-import "../constants"
+import { DEFAULT_TIMEOUT } from "./Constants";
+import * as Context from "./Context";
+import * as AndroidUtils from "./AndroidUtils";
 
 const SELECTORS = {
     ANDROID: {
@@ -47,6 +49,21 @@ class NativeAlert {
             ? SELECTORS.ANDROID.ALERT_BUTTON.replace(/{BUTTON_TEXT}/, selector.toUpperCase())
             : `~${selector}`;
         $(buttonSelector).click();
+    }
+
+    public static acceptPermission():void{
+        //TODO REWORK PERMISSIONS DIALOGS - only works for android 9 in english
+        Context.switchToContext(Context.CONTEXT_REF.NATIVE);
+        AndroidUtils.getElemByText("ALLOW").click();
+        Context.switchToContext(Context.CONTEXT_REF.WEBVIEW);
+    }
+
+
+    public static denyPermission():void{
+        //TODO REWORK PERMISSIONS DIALOGS - only works for android 9 in english
+        Context.switchToContext(Context.CONTEXT_REF.NATIVE);
+        AndroidUtils.getElemByText("DENY").click();
+        Context.switchToContext(Context.CONTEXT_REF.WEBVIEW);
     }
 
     /**

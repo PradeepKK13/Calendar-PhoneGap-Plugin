@@ -303,17 +303,19 @@
                        calendars: (NSArray*)calendars {
 
   NSMutableArray *predicateStrings = [NSMutableArray arrayWithCapacity:3];
+  NSMutableArray *predicateArguments = [NSMutableArray arrayWithCapacity:3];
+
   if (title != (id)[NSNull null] && title.length > 0) {
-    title = [title stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
-    [predicateStrings addObject:[NSString stringWithFormat:@"title contains[c] '%@'", title]];
+    [predicateStrings addObject:@"title contains[c] %@"];
+    [predicateArguments addObject:title];
   }
   if (location != (id)[NSNull null] && location.length > 0) {
-    location = [location stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
-    [predicateStrings addObject:[NSString stringWithFormat:@"location contains[c] '%@'", location]];
+    [predicateStrings addObject:@"location contains[c] %@"];
+    [predicateArguments addObject:location];
   }
   if (notes != (id)[NSNull null] && notes.length > 0) {
-    notes = [notes stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
-    [predicateStrings addObject:[NSString stringWithFormat:@"notes contains[c] '%@'", notes]];
+    [predicateStrings addObject:@"notes contains[c] %@"];
+    [predicateArguments addObject:notes];
   }
 
   NSString *predicateString = [predicateStrings componentsJoinedByString:@" AND "];
@@ -322,7 +324,7 @@
   NSArray  *datedEvents, *matchingEvents;
 
   if (predicateString.length > 0) {
-    matches = [NSPredicate predicateWithFormat:predicateString];
+    matches = [NSPredicate predicateWithFormat:predicateString argumentArray:predicateArguments];
 
     datedEvents = [self.eventStore eventsMatchingPredicate:[eventStore predicateForEventsWithStartDate:startDate endDate:endDate calendars:calendars]];
 

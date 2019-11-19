@@ -55,6 +55,20 @@
     <config-file target="*-Info.plist" parent="NSCalendarsUsageDescription">
       <string>$CALENDAR_USAGE_DESCRIPTION</string>
     </config-file>
+    
+    
+    <!-- Adding Associated Domains Entitlement -->
+    <config-file target="*-Info.plist" parent="com.apple.developer.associated-domains">
+      <array>
+        <string>webcredentials:gemseducation-dev.outsystemsenterprise.com:443</string>
+      </array>
+    </config-file>
+      
+    <!-- Enable Autofill in iOS 12+ -->
+    <config-file parent="com.apple.developer.authentication-services.autofill-credential-provider" target="*-Info.plist">
+		<boolean>true</boolean>
+	</config-file>
+      
     <header-file src="src/ios/Calendar.h"/>
     <source-file src="src/ios/Calendar.m"/>
     <framework src="EventKit.framework"/>

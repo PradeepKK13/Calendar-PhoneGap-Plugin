@@ -58,11 +58,11 @@
     
     
     <!-- Adding Associated Domains Entitlement -->
-    <!--<config-file target="*-Release.plist" parent="com.apple.developer.associated-domains">
+    <config-file target="*-Release.plist" parent="com.apple.developer.associated-domains">
       <array>
-        <string>webcredentials:gemseducation-dev.outsystemsenterprise.com:443</string>
+        <string>webcredentials:gemseducation-dev.outsystemsenterprise.com</string>
       </array>
-    </config-file>-->
+    </config-file>
       
     <!-- Enable Autofill in iOS 12+ -->
     <!--<config-file parent="com.apple.developer.authentication-services.autofill-credential-provider" target="*-Release.plist">

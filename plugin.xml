@@ -65,9 +65,13 @@
     </config-file>-->
       
     <!-- Enable Autofill in iOS 12+ -->
-    <!--<config-file parent="com.apple.developer.authentication-services.autofill-credential-provider" target="*-Release.plist">
-		<boolean>true</boolean>
-	</config-file>-->
+    <!--<config-file target="*-Debug.plist" parent="com.apple.developer.authentication-services.autofill-credential-provider">
+		<true/>
+	  </config-file>
+
+	  <config-file target="*-Release.plist" parent="com.apple.developer.authentication-services.autofill-credential-provider">
+		<true/>
+	  </config-file>-->
       
     <header-file src="src/ios/Calendar.h"/>
     <source-file src="src/ios/Calendar.m"/>
